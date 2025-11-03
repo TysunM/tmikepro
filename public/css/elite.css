@@ -1,0 +1,162 @@
+/* public/css/elite.css */
+
+/* --- Root & Font Setup --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap');
+
+:root {
+    --primary-color: #0A0A0A;
+    --secondary-color: #F5F5F5;
+    --accent-color: #007BFF; /* A clean, professional blue */
+    --card-bg: #1A1A1A;
+    --border-color: #2A2A2A;
+    
+    --font-main: 'Inter', sans-serif;
+    
+    --transition-fast: 0.2s ease;
+    --transition-smooth: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- Base & Smooth Scroll --- */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Header & Nav --- */
+.main-header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+}
+/* ... (basic nav styling) ... */
+
+/* --- Elite Button & CTA Animations --- */
+.cta-button {
+    font-family: var(--font-main);
+    font-weight: 500;
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    z-index: 1;
+}
+
+/* Hover State: Background fill + subtle shadow pop */
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Click State: Ripple Effect */
+.cta-button .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple-effect 0.6s linear;
+}
+
+@keyframes ripple-effect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* --- Phase 2: On-Scroll-Reveal Animations --- */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- Phase 2: Parallax Effect --- */
+.parallax-section {
+    background-image: url('/stock_images/music_producer_headp_0d80fa5b.jpg'); /* Example image */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+/* --- Phase 2: Hover-Tilt Effect --- */
+.service-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.service-card:hover {
+    /* transform is handled by tilt.js, but we add a fallback */
+    transform: scale(1.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Project Progress Bar (for Dashboard) --- */
+.progress-bar-container {
+    width: 100%;
+    background-color: var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 10px;
+    width: 0%; /* Will be set by JS */
+    background-color: var(--accent-color);
+    transition: width var(--transition-smooth);
+    border-radius: 5px;
+}
+
+.progress-bar-steps {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #888;
+    padding: 0 5px;
+    margin-top: 0.5rem;
+}
+
+.progress-bar-step {
+    position: relative;
+    width: 14%; /* 100 / 7 steps */
+    text-align: center;
+}
+
+.progress-bar-step.active {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
