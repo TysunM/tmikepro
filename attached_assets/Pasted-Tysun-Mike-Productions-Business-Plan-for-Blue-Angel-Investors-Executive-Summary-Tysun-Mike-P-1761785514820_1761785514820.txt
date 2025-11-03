@@ -1,0 +1,143 @@
+Tysun Mike Productions — Business Plan for Blue Angel Investors
+
+Executive Summary
+
+Tysun Mike Productions is a high-performance audio engineering and creative technology studio based in Walnut Creek, CA. We specialize in mixing, mastering, branding, and static web development for artists, labels, and creative entrepreneurs. Our mission is to deliver elite sonic quality, visual identity, and client empowerment through a modular, scalable service model.
+
+We are seeking strategic investment from Blue Angel partners to expand our infrastructure, launch proprietary tools, and scale our client acquisition pipeline. With deep technical expertise, a refined studio arsenal, and a client-first digital experience, Tysun Mike Productions is positioned to become a category-defining brand in the creator economy.
+
+---
+
+Vision
+
+To become the most trusted, technically elite, and creatively empowering audio engineering brand in the world—where artists come not just for sound, but for transformation.
+
+---
+
+Founder Profile
+
+Tysun Mike Lynch  
+Founder, Lead Engineer  
+- Expert in mixing, mastering, and audio engineering across all genres  
+- Full-stack web developer and branding strategist  
+- Creator of modular workflow systems for client onboarding and education  
+- Deeply invested in transparency, excellence, and long-term creative partnerships
+
+---
+
+Services
+
+| Service                | Description                                                                 |
+|------------------------|-----------------------------------------------------------------------------|
+| Mixing                 | Precision balance, emotional clarity, and cross-platform translation        |
+| Mastering              | Competitive loudness, dynamic integrity, and metadata optimization          |
+| Branding & Album Art   | Visual identity systems for singles, EPs, and full campaigns                |
+| Static Website Dev     | Fast, secure artist sites with streaming embeds and merch integration       |
+| Consultation & Onboarding | Modular checklists, branded packets, and client education flows         |
+
+---
+
+Branded Pricing Tiers
+
+| Package Name           | Mix Only | Mix & Master | Features                                                                 |
+|------------------------|----------|--------------|--------------------------------------------------------------------------|
+| Ballin' on a Budget    | $25      | $50          | Basic edits, volume expression, EQ, delay, de-essing, 5-day turnaround   |
+| So Fresh & So Clean    | $50      | $85          | Clean mix, volume automation, basic sound balance                        |
+| The Big Leagues        | $85      | $150         | Advanced processing, pitch correction, tuning, EQ, sidechaining, up to 10 tracks, revisions |
+| Double Uranium         | $150     | $275         | Unlimited tracks, full production, advanced revisions, 2-day turnaround, full creative input |
+
+These packages are bold, memorable, and built to scale with the brand. They also serve as anchors for loyalty rewards and referral incentives.
+
+---
+
+Studio Arsenal & Plugin Stack
+
+🎙️ Mic Locker
+
+- Basic: Neumann U87 Ai, Shure SM7B, Rode NT1, AT2020  
+- Pro: Warm Audio WA-251, Telefunken U47, R2i Ribbon, Handheld Condenser  
+- Prestige: Sennheiser MKH 416, AEA R34 Ribbon, Neumann KMS 105 (live)
+
+🎧 Monitoring Philosophy
+
+Multiple headphone references to ensure mix translation:
+- Sennheiser HD 900 (neutral), Sony MDR-1 (bass), Focal Utopia (hi-reveal), Beyerdynamic DT 990P (treble), AKG K702 (mid), Audio-Technica M50x (hi-bass), Neumann NDH 20 (mid-bass), M1H-TECH (neutral)
+
+🔌 Plugin Arsenal
+
+Includes full suites from:
+- Waves, FabFilter, Soundtoys, iZotope, AIR, Antares, Analog Obsession, Arturia, Audiority, D16 Group, Slate Digital, Blue Cat Audio, DMG Audio, Cableguys, Plugin Alliance, Native Instruments, Softube, Valhalla DSP, Eventide, MeldaProduction, Kilohearts, PSP Audioware, Tracktion, U-he, IK Multimedia, Acustica Audio
+
+---
+
+Unique Website Features
+
+Tysun Mike Productions offers a client portal experience that sets it apart from any other studio:
+
+✅ Real-Time Progress Bar
+
+Clients can track every phase of their project in real time:
+- Start of Project → Intake confirmed  
+- Static Mix → Initial balance pass  
+- Mix → Full processing and automation  
+- Master → Final loudness and polish  
+- Review → Client feedback and revisions  
+- Complete → Final delivery and archive
+
+This transparent workflow builds trust, reduces anxiety, and reinforces professionalism.
+
+✅ Interactive Booking & Tier Selection
+
+Clients can:
+- Choose packages via a visual pricing grid  
+- Schedule consultations or delivery timelines  
+- Upload files and receive automated confirmations
+
+✅ Loyalty Tracker
+
+Clients can view:
+- Referral credits  
+- Birthday bonuses  
+- Milestone rewards  
+- Package discounts based on history
+
+---
+
+Marketing & Retention Programs
+
+1. Referral Program:  
+   Refer a client who completes one project → get a free mix (mix-only tier).
+
+2. Milestone Bonus:  
+   After 9 completed mixes & masters + referral of a client who completes 3 mixes & masters in 3 months → get a free mix & master at “So Fresh and So Clean” level.
+
+3. New Client Bonus:  
+   First-time clients get a free mix to build trust. Mastering is billed separately.
+
+4. Birthday Bonus:  
+   On a client’s birthday, they receive a gift voucher via email valid for 2 months starting from the 1st of their birthday month.
+
+5. Founder’s Birthday Sale:  
+   Every year on Tysun’s birthday, all mix and master packages are 30% off.
+
+6. 20-Song Loyalty Reward:  
+   After 20 completed mix & master projects (equivalent to two full albums), clients receive 50% off the “Double Uranium” package.
+
+---
+
+Growth Strategy
+
+- Phase 1: Infrastructure Expansion
+  - Upgrade studio hardware and monitoring environment
+  - Deploy client portal with intake forms, scheduling, and file management
+  - Launch branded onboarding packet and modular checklist system
+
+- Phase 2: Productization
+  - Release digital products (mix templates, mastering chains, branding kits)
+  - Build internal CRM dashboard for client tracking and referrals
+  - Develop educational content for YouTube, blog, and SEO
+
+- Phase 3: Scale & Licensing
+  - License branded workflow systems to other studios
+  - Expand into remote engineering and white-label branding
+  - Explore strategic partnerships with DAW companies, plugin makers, and music platforms

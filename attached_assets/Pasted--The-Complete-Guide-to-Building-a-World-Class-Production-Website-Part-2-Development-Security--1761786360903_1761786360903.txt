@@ -1,0 +1,1188 @@
+# The Complete Guide to Building a World-Class Production Website
+## Part 2: Development, Security, and Deployment
+
+---
+
+# PHASE 2: CORE DEVELOPMENT
+
+## 6. Backend API Development
+
+### RESTful API Design Principles
+
+#### API Versioning
+
+```javascript
+// Use URL versioning for major changes
+app.use('/api/v1', v1Routes);
+app.use('/api/v2', v2Routes);
+
+// Or use header versioning
+app.use((req, res, next) => {
+    const version = req.headers['api-version'] || '1.0';
+    req.apiVersion = version;
+    next();
+});
+```
+
+#### Response Format Standardization
+
+```javascript
+// Success response
+{
+    "success": true,
+    "data": {
+        // Response data
+    },
+    "message": "Operation successful",
+    "timestamp": "2024-01-01T00:00:00.000Z"
+}
+
+// Error response
+{
+    "success": false,
+    "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Invalid input data",
+        "details": [
+            {
+                "field": "email",
+                "message": "Email is required"
+            }
+        ]
+    },
+    "timestamp": "2024-01-01T00:00:00.000Z"
+}
+
+// Pagination response
+{
+    "success": true,
+    "data": [...],
+    "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 150,
+        "totalPages": 8,
+        "hasNext": true,
+        "hasPrev": false
+    }
+}
+```
+
+### Implementation Examples
+
+#### Authentication Controller
+
+```javascript
+// src/controllers/auth.controller.js
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { z } from 'zod';
+import { pool } from '../config/database.js';
+import { sendEmail } from '../services/email.service.js';
+import { logger } from '../utils/logger.js';
+
+// Validation schemas
+const signupSchema = z.object({
+    email: z.string().email('Invalid email address'),
+    password: z.string()
+        .min(8, 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number')
+        .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    phone: z.string().optional(),
+});
+
+const loginSchema = z.object({
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(1, 'Password is required'),
+});
+
+export const signup = async (req, res, next) => {
+    try {
+        // Validate input
+        const validatedData = signupSchema.parse(req.body);
+        
+        // Check if user exists
+        const existingUser = await pool.query(
+            'SELECT id FROM users WHERE email = $1',
+            [validatedData.email]
+        );
+        
+        if (existingUser.rows.length > 0) {
+            return res.status(409).json({
+                success: false,
+                error: {
+                    code: 'USER_EXISTS',
+                    message: 'User with this email already exists',
+                },
+            });
+        }
+        
+        // Hash password
+        const passwordHash = await bcrypt.hash(validatedData.password, 12);
+        
+        // Generate verification token
+        const verificationToken = jwt.sign(
+            { email: validatedData.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        
+        // Create user
+        const result = await pool.query(
+            `INSERT INTO users (email, password_hash, name, phone, verification_token)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id, uuid, email, name, created_at`,
+            [validatedData.email, passwordHash, validatedData.name, validatedData.phone, verificationToken]
+        );
+        
+        const user = result.rows[0];
+        
+        // Create loyalty record
+        await pool.query(
+            'INSERT INTO loyalty (user_id) VALUES ($1)',
+            [user.id]
+        );
+        
+        // Send verification email
+        await sendEmail({
+            to: user.email,
+            subject: 'Welcome to Tysun Mike Productions - Verify Your Email',
+            template: 'welcome',
+            data: {
+                name: user.name,
+                verificationLink: `${process.env.BASE_URL}/verify-email?token=${verificationToken}`,
+            },
+        });
+        
+        // Generate JWT
+        const token = jwt.sign(
+            { uid: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+        
+        // Log activity
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, action, ip_address, user_agent)
+             VALUES ($1, $2, $3, $4)`,
+            [user.id, 'signup', req.ip, req.headers['user-agent']]
+        );
+        
+        logger.info('User signed up', { userId: user.id, email: user.email });
+        
+        res.status(201).json({
+            success: true,
+            data: {
+                user: {
+                    id: user.uuid,
+                    email: user.email,
+                    name: user.name,
+                },
+                token,
+            },
+            message: 'Account created successfully. Please check your email to verify your account.',
+        });
+        
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    message: 'Invalid input data',
+                    details: error.errors.map(err => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                },
+            });
+        }
+        next(error);
+    }
+};
+
+export const login = async (req, res, next) => {
+    try {
+        // Validate input
+        const validatedData = loginSchema.parse(req.body);
+        
+        // Find user
+        const result = await pool.query(
+            'SELECT id, uuid, email, password_hash, name, is_verified, is_admin FROM users WHERE email = $1 AND deleted_at IS NULL',
+            [validatedData.email]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'INVALID_CREDENTIALS',
+                    message: 'Invalid email or password',
+                },
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // Verify password
+        const isValidPassword = await bcrypt.compare(validatedData.password, user.password_hash);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'INVALID_CREDENTIALS',
+                    message: 'Invalid email or password',
+                },
+            });
+        }
+        
+        // Generate JWT
+        const token = jwt.sign(
+            { uid: user.id, email: user.email, admin: user.is_admin },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+        
+        // Update last login
+        await pool.query(
+            'UPDATE users SET last_login = NOW() WHERE id = $1',
+            [user.id]
+        );
+        
+        // Log activity
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, action, ip_address, user_agent)
+             VALUES ($1, $2, $3, $4)`,
+            [user.id, 'login', req.ip, req.headers['user-agent']]
+        );
+        
+        logger.info('User logged in', { userId: user.id, email: user.email });
+        
+        res.json({
+            success: true,
+            data: {
+                user: {
+                    id: user.uuid,
+                    email: user.email,
+                    name: user.name,
+                    isVerified: user.is_verified,
+                    isAdmin: user.is_admin,
+                },
+                token,
+            },
+            message: 'Login successful',
+        });
+        
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    message: 'Invalid input data',
+                    details: error.errors.map(err => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                },
+            });
+        }
+        next(error);
+    }
+};
+
+export const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'MISSING_EMAIL',
+                    message: 'Email is required',
+                },
+            });
+        }
+        
+        // Find user
+        const result = await pool.query(
+            'SELECT id, email, name FROM users WHERE email = $1 AND deleted_at IS NULL',
+            [email]
+        );
+        
+        // Always return success (security best practice - don't reveal if email exists)
+        if (result.rows.length === 0) {
+            return res.json({
+                success: true,
+                message: 'If an account exists with this email, a password reset link has been sent.',
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // Generate reset token
+        const resetToken = jwt.sign(
+            { uid: user.id, purpose: 'password_reset' },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        
+        // Save token to database
+        await pool.query(
+            `UPDATE users 
+             SET reset_password_token = $1, reset_password_expires = NOW() + INTERVAL '1 hour'
+             WHERE id = $2`,
+            [resetToken, user.id]
+        );
+        
+        // Send reset email
+        await sendEmail({
+            to: user.email,
+            subject: 'Reset Your Password - Tysun Mike Productions',
+            template: 'password-reset',
+            data: {
+                name: user.name,
+                resetLink: `${process.env.BASE_URL}/reset-password?token=${resetToken}`,
+            },
+        });
+        
+        logger.info('Password reset requested', { userId: user.id, email: user.email });
+        
+        res.json({
+            success: true,
+            message: 'If an account exists with this email, a password reset link has been sent.',
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { token, newPassword } = req.body;
+        
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'MISSING_DATA',
+                    message: 'Token and new password are required',
+                },
+            });
+        }
+        
+        // Validate password strength
+        const passwordSchema = z.string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+            .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+            .regex(/[0-9]/, 'Password must contain at least one number')
+            .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+        
+        try {
+            passwordSchema.parse(newPassword);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'WEAK_PASSWORD',
+                    message: error.errors[0].message,
+                },
+            });
+        }
+        
+        // Verify token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'INVALID_TOKEN',
+                    message: 'Invalid or expired reset token',
+                },
+            });
+        }
+        
+        // Find user and verify token
+        const result = await pool.query(
+            `SELECT id, email, name 
+             FROM users 
+             WHERE id = $1 
+             AND reset_password_token = $2 
+             AND reset_password_expires > NOW()
+             AND deleted_at IS NULL`,
+            [decoded.uid, token]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'INVALID_TOKEN',
+                    message: 'Invalid or expired reset token',
+                },
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // Hash new password
+        const passwordHash = await bcrypt.hash(newPassword, 12);
+        
+        // Update password and clear reset token
+        await pool.query(
+            `UPDATE users 
+             SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL
+             WHERE id = $2`,
+            [passwordHash, user.id]
+        );
+        
+        // Send confirmation email
+        await sendEmail({
+            to: user.email,
+            subject: 'Password Changed Successfully',
+            template: 'password-changed',
+            data: {
+                name: user.name,
+            },
+        });
+        
+        logger.info('Password reset successful', { userId: user.id, email: user.email });
+        
+        res.json({
+            success: true,
+            message: 'Password reset successful. You can now login with your new password.',
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+};
+```
+
+#### Projects Controller
+
+```javascript
+// src/controllers/projects.controller.js
+import { z } from 'zod';
+import { pool } from '../config/database.js';
+import { uploadToS3, deleteFromS3 } from '../services/storage.service.js';
+import { createPaymentIntent } from '../services/payment.service.js';
+import { sendEmail } from '../services/email.service.js';
+import { logger } from '../utils/logger.js';
+
+const createProjectSchema = z.object({
+    serviceType: z.enum(['mixing', 'mastering', 'design', 'website', 'consultation']),
+    package: z.enum(['basic', 'pro', 'premium', 'custom']),
+    title: z.string().min(3, 'Title must be at least 3 characters'),
+    description: z.string().optional(),
+});
+
+export const createProject = async (req, res, next) => {
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Validate input
+        const validatedData = createProjectSchema.parse(req.body);
+        const userId = req.user.id; // From auth middleware
+        
+        // Calculate price based on service and package
+        const pricing = {
+            mixing: { basic: 50, pro: 100, premium: 200 },
+            mastering: { basic: 30, pro: 60, premium: 120 },
+            design: { basic: 75, pro: 150, premium: 300 },
+            website: { basic: 500, pro: 1000, premium: 2000 },
+            consultation: { basic: 50, pro: 50, premium: 50 },
+        };
+        
+        const price = pricing[validatedData.serviceType][validatedData.package];
+        
+        // Calculate ETA
+        const etaDays = {
+            basic: 3,
+            pro: 5,
+            premium: 7,
+        };
+        
+        const eta = new Date();
+        eta.setDate(eta.getDate() + etaDays[validatedData.package]);
+        
+        // Create project
+        const projectResult = await client.query(
+            `INSERT INTO projects (user_id, service_type, package, title, description, price, eta)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING id, uuid, service_type, package, title, price, eta, status, created_at`,
+            [userId, validatedData.serviceType, validatedData.package, validatedData.title, validatedData.description, price, eta]
+        );
+        
+        const project = projectResult.rows[0];
+        
+        // Handle file uploads if present
+        let uploadedFiles = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const s3Result = await uploadToS3(file, `projects/${project.uuid}`);
+                
+                await client.query(
+                    `INSERT INTO project_files (project_id, file_name, file_size, file_type, file_url, s3_key, upload_type)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                    [project.id, file.originalname, file.size, file.mimetype, s3Result.url, s3Result.key, 'input']
+                );
+                
+                uploadedFiles.push({
+                    name: file.originalname,
+                    size: file.size,
+                    url: s3Result.url,
+                });
+            }
+        }
+        
+        // Create payment intent
+        const paymentIntent = await createPaymentIntent({
+            amount: price * 100, // Convert to cents
+            currency: 'usd',
+            metadata: {
+                projectId: project.uuid,
+                userId: req.user.uuid,
+                serviceType: validatedData.serviceType,
+                package: validatedData.package,
+            },
+        });
+        
+        // Save payment record
+        await client.query(
+            `INSERT INTO payments (user_id, project_id, stripe_payment_intent_id, amount, status)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [userId, project.id, paymentIntent.id, price, 'pending']
+        );
+        
+        await client.query('COMMIT');
+        
+        // Send notification emails
+        await sendEmail({
+            to: req.user.email,
+            subject: 'Project Created Successfully',
+            template: 'project-created',
+            data: {
+                name: req.user.name,
+                projectTitle: project.title,
+                serviceType: validatedData.serviceType,
+                package: validatedData.package,
+                price,
+                eta: eta.toLocaleDateString(),
+                paymentUrl: `${process.env.BASE_URL}/payment/${paymentIntent.id}`,
+            },
+        });
+        
+        await sendEmail({
+            to: process.env.ADMIN_EMAIL,
+            subject: 'New Project Submission',
+            template: 'admin-new-project',
+            data: {
+                userName: req.user.name,
+                userEmail: req.user.email,
+                projectTitle: project.title,
+                serviceType: validatedData.serviceType,
+                package: validatedData.package,
+                price,
+                fileCount: uploadedFiles.length,
+                projectUrl: `${process.env.BASE_URL}/admin/projects/${project.uuid}`,
+            },
+        });
+        
+        logger.info('Project created', { 
+            projectId: project.id, 
+            userId, 
+            serviceType: validatedData.serviceType,
+            package: validatedData.package,
+        });
+        
+        res.status(201).json({
+            success: true,
+            data: {
+                project: {
+                    id: project.uuid,
+                    title: project.title,
+                    serviceType: project.service_type,
+                    package: project.package,
+                    price: project.price,
+                    eta: project.eta,
+                    status: project.status,
+                    createdAt: project.created_at,
+                },
+                payment: {
+                    clientSecret: paymentIntent.client_secret,
+                    amount: price,
+                },
+                files: uploadedFiles,
+            },
+            message: 'Project created successfully. Please complete payment to begin processing.',
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    message: 'Invalid input data',
+                    details: error.errors.map(err => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                },
+            });
+        }
+        
+        next(error);
+    } finally {
+        client.release();
+    }
+};
+
+export const getProjects = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { page = 1, limit = 20, status, serviceType } = req.query;
+        
+        const offset = (page - 1) * limit;
+        
+        // Build query
+        let query = `
+            SELECT 
+                p.uuid as id,
+                p.service_type,
+                p.package,
+                p.title,
+                p.description,
+                p.status,
+                p.price,
+                p.paid,
+                p.eta,
+                p.created_at,
+                p.updated_at,
+                COUNT(pf.id) as file_count
+            FROM projects p
+            LEFT JOIN project_files pf ON p.id = pf.project_id
+            WHERE p.user_id = $1
+        `;
+        
+        const params = [userId];
+        let paramCount = 1;
+        
+        if (status) {
+            paramCount++;
+            query += ` AND p.status = $${paramCount}`;
+            params.push(status);
+        }
+        
+        if (serviceType) {
+            paramCount++;
+            query += ` AND p.service_type = $${paramCount}`;
+            params.push(serviceType);
+        }
+        
+        query += ` GROUP BY p.id ORDER BY p.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+        params.push(limit, offset);
+        
+        // Get projects
+        const projectsResult = await pool.query(query, params);
+        
+        // Get total count
+        let countQuery = 'SELECT COUNT(*) FROM projects WHERE user_id = $1';
+        const countParams = [userId];
+        
+        if (status) {
+            countQuery += ' AND status = $2';
+            countParams.push(status);
+        }
+        
+        const countResult = await pool.query(countQuery, countParams);
+        const total = parseInt(countResult.rows[0].count);
+        
+        res.json({
+            success: true,
+            data: projectsResult.rows,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / limit),
+                hasNext: page * limit < total,
+                hasPrev: page > 1,
+            },
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getProjectById = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params; // UUID
+        
+        const result = await pool.query(
+            `SELECT 
+                p.uuid as id,
+                p.service_type,
+                p.package,
+                p.title,
+                p.description,
+                p.status,
+                p.price,
+                p.paid,
+                p.eta,
+                p.started_at,
+                p.completed_at,
+                p.created_at,
+                p.updated_at,
+                json_agg(
+                    json_build_object(
+                        'id', pf.id,
+                        'name', pf.file_name,
+                        'size', pf.file_size,
+                        'type', pf.file_type,
+                        'url', pf.file_url,
+                        'uploadType', pf.upload_type,
+                        'uploadedAt', pf.uploaded_at
+                    )
+                ) FILTER (WHERE pf.id IS NOT NULL) as files
+             FROM projects p
+             LEFT JOIN project_files pf ON p.id = pf.project_id
+             WHERE p.uuid = $1 AND p.user_id = $2
+             GROUP BY p.id`,
+            [id, userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: {
+                    code: 'PROJECT_NOT_FOUND',
+                    message: 'Project not found',
+                },
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: result.rows[0],
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateProject = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { title, description } = req.body;
+        
+        // Verify ownership
+        const checkResult = await pool.query(
+            'SELECT id, status FROM projects WHERE uuid = $1 AND user_id = $2',
+            [id, userId]
+        );
+        
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: {
+                    code: 'PROJECT_NOT_FOUND',
+                    message: 'Project not found',
+                },
+            });
+        }
+        
+        const project = checkResult.rows[0];
+        
+        // Only allow updates if project is pending or in_progress
+        if (!['pending', 'in_progress'].includes(project.status)) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'CANNOT_UPDATE',
+                    message: 'Cannot update project in current status',
+                },
+            });
+        }
+        
+        // Update project
+        const updateResult = await pool.query(
+            `UPDATE projects 
+             SET title = COALESCE($1, title),
+                 description = COALESCE($2, description),
+                 updated_at = NOW()
+             WHERE id = $3
+             RETURNING uuid, title, description, updated_at`,
+            [title, description, project.id]
+        );
+        
+        logger.info('Project updated', { projectId: project.id, userId });
+        
+        res.json({
+            success: true,
+            data: updateResult.rows[0],
+            message: 'Project updated successfully',
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const cancelProject = async (req, res, next) => {
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { reason } = req.body;
+        
+        // Get project
+        const projectResult = await client.query(
+            'SELECT id, uuid, title, status, paid, price FROM projects WHERE uuid = $1 AND user_id = $2',
+            [id, userId]
+        );
+        
+        if (projectResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({
+                success: false,
+                error: {
+                    code: 'PROJECT_NOT_FOUND',
+                    message: 'Project not found',
+                },
+            });
+        }
+        
+        const project = projectResult.rows[0];
+        
+        // Only allow cancellation if pending or in_progress
+        if (!['pending', 'in_progress'].includes(project.status)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: 'CANNOT_CANCEL',
+                    message: 'Cannot cancel project in current status',
+                },
+            });
+        }
+        
+        // Update project status
+        await client.query(
+            'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2',
+            ['cancelled', project.id]
+        );
+        
+        // If paid, initiate refund
+        if (project.paid) {
+            // Get payment
+            const paymentResult = await client.query(
+                'SELECT stripe_payment_intent_id FROM payments WHERE project_id = $1 AND status = $2',
+                [project.id, 'succeeded']
+            );
+            
+            if (paymentResult.rows.length > 0) {
+                // Initiate refund through Stripe
+                // This would be implemented in payment service
+                // await refundPayment(paymentResult.rows[0].stripe_payment_intent_id);
+                
+                await client.query(
+                    'UPDATE payments SET status = $1 WHERE project_id = $2',
+                    ['refunded', project.id]
+                );
+            }
+        }
+        
+        await client.query('COMMIT');
+        
+        // Send notification
+        await sendEmail({
+            to: req.user.email,
+            subject: 'Project Cancelled',
+            template: 'project-cancelled',
+            data: {
+                name: req.user.name,
+                projectTitle: project.title,
+                refundInfo: project.paid ? 'A refund has been initiated and will be processed within 5-10 business days.' : '',
+            },
+        });
+        
+        logger.info('Project cancelled', { projectId: project.id, userId, reason });
+        
+        res.json({
+            success: true,
+            message: 'Project cancelled successfully',
+        });
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        next(error);
+    } finally {
+        client.release();
+    }
+};
+```
+
+### Middleware Implementation
+
+#### Authentication Middleware
+
+```javascript
+// src/middleware/auth.middleware.js
+import jwt from 'jsonwebtoken';
+import { pool } from '../config/database.js';
+import { redis } from '../config/redis.js';
+
+export const requireAuth = async (req, res, next) => {
+    try {
+        // Get token from header
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'NO_TOKEN',
+                    message: 'Authentication required',
+                },
+            });
+        }
+        
+        const token = authHeader.substring(7); // Remove 'Bearer '
+        
+        // Verify token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'INVALID_TOKEN',
+                    message: 'Invalid or expired token',
+                },
+            });
+        }
+        
+        // Check if token is blacklisted (for logout functionality)
+        const isBlacklisted = await redis.get(`blacklist:${token}`);
+        if (isBlacklisted) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'TOKEN_REVOKED',
+                    message: 'Token has been revoked',
+                },
+            });
+        }
+        
+        // Get user from database
+        const result = await pool.query(
+            'SELECT id, uuid, email, name, is_admin, is_verified FROM users WHERE id = $1 AND deleted_at IS NULL',
+            [decoded.uid]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not found',
+                },
+            });
+        }
+        
+        // Attach user to request
+        req.user = result.rows[0];
+        req.token = token;
+        
+        next();
+        
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const requireAdmin = (req, res, next) => {
+    if (!req.user || !req.user.is_admin) {
+        return res.status(403).json({
+            success: false,
+            error: {
+                code: 'FORBIDDEN',
+                message: 'Admin access required',
+            },
+        });
+    }
+    next();
+};
+
+export const requireVerified = (req, res, next) => {
+    if (!req.user || !req.user.is_verified) {
+        return res.status(403).json({
+            success: false,
+            error: {
+                code: 'EMAIL_NOT_VERIFIED',
+                message: 'Please verify your email address',
+            },
+        });
+    }
+    next();
+};
+```
+
+#### Rate Limiting Middleware
+
+```javascript
+// src/middleware/rateLimit.middleware.js
+import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
+import { redis } from '../config/redis.js';
+
+export const apiLimiter = rateLimit({
+    store: new RedisStore({
+        client: redis,
+        prefix: 'rl:api:',
+    }),
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: {
+        success: false,
+        error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'Too many requests, please try again later',
+        },
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const authLimiter = rateLimit({
+    store: new RedisStore({
+        client: redis,
+        prefix: 'rl:auth:',
+    }),
+    windowMs: 15 * 60 * 1000,
+    max: 5, // Limit auth attempts
+    message: {
+        success: false,
+        error: {
+            code: 'TOO_MANY_AUTH_ATTEMPTS',
+            message: 'Too many authentication attempts, please try again later',
+        },
+    },
+    skipSuccessfulRequests: true,
+});
+
+export const uploadLimiter = rateLimit({
+    store: new RedisStore({
+        client: redis,
+        prefix: 'rl:upload:',
+    }),
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // Limit uploads
+    message: {
+        success: false,
+        error: {
+            code: 'UPLOAD_LIMIT_EXCEEDED',
+            message: 'Too many uploads, please try again later',
+        },
+    },
+});
+```
+
+#### Error Handling Middleware
+
+```javascript
+// src/middleware/error.middleware.js
+import { logger } from '../utils/logger.js';
+
+export const errorHandler = (err, req, res, next) => {
+    // Log error
+    logger.error('Error occurred', {
+        error: err.message,
+        stack: err.stack,
+        url: req.url,
+        method: req.method,
+        ip: req.ip,
+        userId: req.user?.id,
+    });
+    
+    // Default error
+    let status = 500;
+    let code = 'INTERNAL_SERVER_ERROR';
+    let message = 'An unexpected error occurred';
+    
+    // Handle specific error types
+    if (err.name === 'ValidationError') {
+        status = 400;
+        code = 'VALIDATION_ERROR';
+        message = err.message;
+    } else if (err.name === 'UnauthorizedError') {
+        status = 401;
+        code = 'UNAUTHORIZED';
+        message = 'Authentication required';
+    } else if (err.name === 'ForbiddenError') {
+        status = 403;
+        code = 'FORBIDDEN';
+        message = 'Access denied';
+    } else if (err.code === '23505') { // PostgreSQL unique violation
+        status = 409;
+        code = 'DUPLICATE_ENTRY';
+        message = 'Resource already exists';
+    } else if (err.code === '23503') { // PostgreSQL foreign key violation
+        status = 400;
+        code = 'INVALID_REFERENCE';
+        message = 'Referenced resource does not exist';
+    }
+    
+    // Don't expose internal errors in production
+    if (process.env.NODE_ENV === 'production' && status === 500) {
+        message = 'An unexpected error occurred';
+    }
+    
+    res.status(status).json({
+        success: false,
+        error: {
+            code,
+            message,
+            ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+        },
+    });
+};
+
+export const notFoundHandler = (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: {
+            code: 'NOT_FOUND',
+            message: 'The requested resource was not found',
+        },
+    });
+};
+```
+
+---
+
+This continues the comprehensive guide. Would you like me to continue with the remaining sections covering security, deployment, performance optimization, and production best practices?
+

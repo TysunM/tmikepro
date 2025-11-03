@@ -1,0 +1,1252 @@
+# The Complete Guide to Building a World-Class Production Website
+## From Zero to Top 1% Quality - TysunMikePro Audio Engineering Platform
+
+**Author:** AI Development Team  
+**Project:** TysunMikePro - Professional Audio Engineering Services Platform  
+**Target:** Production-ready, enterprise-grade website  
+**Timeline:** 4-8 weeks for full implementation  
+**Skill Level:** Intermediate to Advanced
+
+---
+
+## Table of Contents
+
+### Phase 1: Foundation & Planning (Week 1)
+1. Project Requirements & Scope
+2. Technology Stack Selection
+3. Architecture Design
+4. Database Schema Design
+5. Development Environment Setup
+
+### Phase 2: Core Development (Weeks 2-3)
+6. Backend API Development
+7. Database Implementation
+8. Authentication & Security
+9. Frontend Development
+10. UI/UX Design Implementation
+
+### Phase 3: Advanced Features (Week 4)
+11. AI Chatbot Integration
+12. Email System Setup
+13. Payment Processing
+14. File Upload & Management
+15. Real-time Features
+
+### Phase 4: Quality & Performance (Week 5)
+16. Performance Optimization
+17. Security Hardening
+18. SEO Implementation
+19. Accessibility (WCAG 2.1 AA)
+20. Testing & Quality Assurance
+
+### Phase 5: Deployment & Operations (Week 6)
+21. Production Environment Setup
+22. CI/CD Pipeline
+23. Monitoring & Logging
+24. Backup & Disaster Recovery
+25. SSL & Security Certificates
+
+### Phase 6: Launch & Growth (Weeks 7-8)
+26. Pre-launch Checklist
+27. Soft Launch & Beta Testing
+28. Marketing & Analytics
+29. Ongoing Maintenance
+30. Scaling Strategy
+
+---
+
+# PHASE 1: FOUNDATION & PLANNING
+
+## 1. Project Requirements & Scope
+
+### Business Objectives
+
+**Primary Goal:** Create a professional platform for Tysun Mike Productions to offer audio engineering services online.
+
+**Target Audience:**
+- Independent musicians and artists
+- Record labels and studios
+- Content creators and podcasters
+- Businesses needing audio services
+
+**Core Services:**
+1. **Mixing & Mastering** - Professional audio post-production
+2. **Logo & Album Art Design** - Visual branding for musicians
+3. **Website Building** - Custom websites for artists and businesses
+
+### Functional Requirements
+
+#### Must-Have Features (MVP)
+- [ ] User registration and authentication
+- [ ] Service browsing and information pages
+- [ ] Project submission and management
+- [ ] Secure payment processing
+- [ ] File upload and download
+- [ ] Email notifications
+- [ ] Admin dashboard
+- [ ] AI-powered customer support chatbot
+- [ ] Mobile-responsive design
+- [ ] SSL encryption
+
+#### Should-Have Features (Phase 2)
+- [ ] Real-time project status updates
+- [ ] Client portal with project history
+- [ ] Referral and loyalty program
+- [ ] Consultation booking system
+- [ ] Portfolio showcase
+- [ ] Testimonials and reviews
+- [ ] Blog/news section
+- [ ] Social media integration
+
+#### Nice-to-Have Features (Future)
+- [ ] Live chat with admin
+- [ ] Video consultations
+- [ ] Collaboration tools
+- [ ] Mobile apps (iOS/Android)
+- [ ] API for third-party integrations
+- [ ] Multi-language support
+- [ ] Advanced analytics dashboard
+
+### Non-Functional Requirements
+
+#### Performance
+- Page load time: < 2 seconds
+- Time to Interactive (TTI): < 3 seconds
+- First Contentful Paint (FCP): < 1 second
+- API response time: < 200ms (95th percentile)
+- Support 1000+ concurrent users
+- 99.9% uptime SLA
+
+#### Security
+- OWASP Top 10 compliance
+- PCI DSS compliance for payments
+- GDPR compliance for user data
+- Regular security audits
+- Encrypted data at rest and in transit
+- Rate limiting and DDoS protection
+
+#### Scalability
+- Horizontal scaling capability
+- Database replication
+- CDN integration
+- Caching strategy
+- Load balancing
+
+#### Accessibility
+- WCAG 2.1 Level AA compliance
+- Screen reader compatible
+- Keyboard navigation
+- Color contrast ratios
+- Alt text for all images
+
+---
+
+## 2. Technology Stack Selection
+
+### Frontend Stack
+
+#### Framework: **React 18 with Next.js 14**
+
+**Why Next.js:**
+- Server-Side Rendering (SSR) for SEO
+- Static Site Generation (SSG) for performance
+- Built-in image optimization
+- API routes for backend
+- Excellent developer experience
+- Industry standard for production apps
+
+**Alternative Considered:**
+- Vue.js + Nuxt.js (good, but smaller ecosystem)
+- Vanilla HTML/CSS/JS (current setup - not scalable)
+
+#### Styling: **Tailwind CSS + Headless UI**
+
+**Why Tailwind:**
+- Utility-first approach
+- Highly customizable
+- Small bundle size with purging
+- Consistent design system
+- Rapid development
+
+**Component Library:**
+- Headless UI (accessible components)
+- Radix UI (advanced primitives)
+- Custom components for brand identity
+
+#### State Management: **Zustand or React Query**
+
+**Why:**
+- Simpler than Redux
+- Built-in caching (React Query)
+- TypeScript support
+- Minimal boilerplate
+
+### Backend Stack
+
+#### Runtime: **Node.js 20 LTS**
+
+**Why Node.js:**
+- JavaScript everywhere (full-stack)
+- Large ecosystem (npm)
+- Excellent for I/O operations
+- Real-time capabilities
+- Your current codebase uses it
+
+#### Framework: **Express.js or Fastify**
+
+**Current:** Express.js  
+**Recommendation:** Migrate to Fastify for production
+
+**Why Fastify:**
+- 2-3x faster than Express
+- Built-in schema validation
+- Better TypeScript support
+- Plugin architecture
+- Still compatible with Express middleware
+
+#### API Design: **RESTful + GraphQL (optional)**
+
+**REST for:**
+- Simple CRUD operations
+- File uploads
+- Authentication
+
+**GraphQL for (future):**
+- Complex data fetching
+- Mobile apps
+- Third-party integrations
+
+### Database Stack
+
+#### Primary Database: **PostgreSQL 15**
+
+**Why PostgreSQL:**
+- ACID compliant
+- Excellent JSON support
+- Full-text search
+- Robust and reliable
+- Free and open-source
+- Great for relational data
+
+**Schema Design:**
+- Normalized for data integrity
+- Indexed for performance
+- Partitioned for scalability
+
+#### Caching Layer: **Redis 7**
+
+**Why Redis:**
+- In-memory speed
+- Session storage
+- Rate limiting
+- Real-time features
+- Queue management
+
+#### File Storage: **AWS S3 or Cloudflare R2**
+
+**Why:**
+- Scalable and reliable
+- CDN integration
+- Cost-effective
+- Automatic backups
+- Global distribution
+
+### DevOps & Infrastructure
+
+#### Hosting: **Render.com (Start) → AWS/GCP (Scale)**
+
+**Development/Staging:**
+- Render.com (free tier)
+- Easy deployment
+- Built-in PostgreSQL
+
+**Production (when scaling):**
+- AWS (EC2, RDS, S3, CloudFront)
+- Or Google Cloud Platform
+- Or Digital Ocean App Platform
+
+#### CI/CD: **GitHub Actions**
+
+**Why:**
+- Free for public repos
+- Integrated with GitHub
+- Easy to configure
+- Supports all major platforms
+
+#### Monitoring: **Sentry + LogRocket + Uptime Robot**
+
+**Error Tracking:** Sentry  
+**Session Replay:** LogRocket  
+**Uptime Monitoring:** Uptime Robot  
+**Performance:** Lighthouse CI
+
+#### CDN: **Cloudflare**
+
+**Why:**
+- Free tier is generous
+- DDoS protection
+- SSL certificates
+- Global edge network
+- Analytics
+
+### Third-Party Services
+
+#### Email: **SendGrid or Resend**
+
+**Current:** Gmail (not scalable)  
+**Recommendation:** SendGrid for transactional emails
+
+**Why:**
+- Reliable delivery
+- Email templates
+- Analytics
+- Webhooks
+- Scalable pricing
+
+#### Payments: **Stripe**
+
+**Why:**
+- Industry standard
+- Excellent documentation
+- Strong fraud protection
+- Supports subscriptions
+- Good developer experience
+
+#### AI Chatbot: **Google Gemini API**
+
+**Current:** Gemini (good choice)  
+**Alternative:** OpenAI GPT-4
+
+**Why Gemini:**
+- Free tier (1500 req/day)
+- Fast responses
+- Good quality
+- Multimodal capabilities
+
+#### Analytics: **Google Analytics 4 + Plausible**
+
+**GA4 for:**
+- Detailed user behavior
+- Conversion tracking
+- Integration with Google Ads
+
+**Plausible for:**
+- Privacy-friendly
+- Simple dashboard
+- GDPR compliant
+- Lightweight script
+
+---
+
+## 3. Architecture Design
+
+### System Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER                         │
+├─────────────────────────────────────────────────────────────┤
+│  Web Browser (React/Next.js)  │  Mobile App (Future)        │
+│  - Responsive Design           │  - iOS/Android              │
+│  - Progressive Web App         │  - React Native             │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 │ HTTPS/WSS
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      CDN LAYER (Cloudflare)                  │
+├─────────────────────────────────────────────────────────────┤
+│  - Static Assets Caching     │  - DDoS Protection           │
+│  - SSL/TLS Termination       │  - WAF (Web Application FW)  │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    LOAD BALANCER (Nginx)                     │
+├─────────────────────────────────────────────────────────────┤
+│  - Round Robin Distribution  │  - Health Checks             │
+│  - SSL Termination           │  - Rate Limiting             │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+┌──────────────┐  ┌──────────────┐
+│ App Server 1 │  │ App Server 2 │  (Horizontal Scaling)
+│ (Node.js)    │  │ (Node.js)    │
+└──────┬───────┘  └──────┬───────┘
+       │                 │
+       └────────┬────────┘
+                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    APPLICATION LAYER                         │
+├─────────────────────────────────────────────────────────────┤
+│  API Server (Express/Fastify)                               │
+│  ├─ Authentication Middleware                               │
+│  ├─ Rate Limiting                                           │
+│  ├─ Request Validation                                      │
+│  ├─ Error Handling                                          │
+│  └─ Logging                                                 │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+        ┌────────┴────────┬────────────┬──────────┐
+        ▼                 ▼            ▼          ▼
+┌──────────────┐  ┌──────────┐  ┌─────────┐  ┌────────┐
+│  PostgreSQL  │  │  Redis   │  │   S3    │  │ Gemini │
+│  (Primary DB)│  │ (Cache)  │  │ (Files) │  │  (AI)  │
+└──────────────┘  └──────────┘  └─────────┘  └────────┘
+```
+
+### Application Architecture (MVC Pattern)
+
+```
+src/
+├── controllers/          # Business logic
+│   ├── auth.controller.js
+│   ├── projects.controller.js
+│   ├── payments.controller.js
+│   └── chatbot.controller.js
+│
+├── models/              # Data models
+│   ├── User.model.js
+│   ├── Project.model.js
+│   ├── Payment.model.js
+│   └── Conversation.model.js
+│
+├── routes/              # API endpoints
+│   ├── auth.routes.js
+│   ├── projects.routes.js
+│   ├── payments.routes.js
+│   └── chatbot.routes.js
+│
+├── middleware/          # Express middleware
+│   ├── auth.middleware.js
+│   ├── validation.middleware.js
+│   ├── rateLimit.middleware.js
+│   └── error.middleware.js
+│
+├── services/            # External services
+│   ├── email.service.js
+│   ├── storage.service.js
+│   ├── payment.service.js
+│   └── ai.service.js
+│
+├── utils/               # Helper functions
+│   ├── logger.js
+│   ├── validation.js
+│   ├── encryption.js
+│   └── dates.js
+│
+├── config/              # Configuration
+│   ├── database.js
+│   ├── redis.js
+│   ├── email.js
+│   └── app.js
+│
+└── tests/               # Test files
+    ├── unit/
+    ├── integration/
+    └── e2e/
+```
+
+### Data Flow Architecture
+
+#### User Registration Flow
+
+```
+1. User submits registration form
+   ↓
+2. Frontend validates input
+   ↓
+3. POST /api/auth/signup
+   ↓
+4. Backend validates data (Joi/Zod schema)
+   ↓
+5. Check if email exists (PostgreSQL)
+   ↓
+6. Hash password (bcrypt, 12 rounds)
+   ↓
+7. Create user record (PostgreSQL transaction)
+   ↓
+8. Generate JWT token
+   ↓
+9. Send welcome email (SendGrid queue)
+   ↓
+10. Return token + user data
+   ↓
+11. Frontend stores token (httpOnly cookie)
+   ↓
+12. Redirect to dashboard
+```
+
+#### Project Submission Flow
+
+```
+1. User fills project form
+   ↓
+2. Upload files (multipart/form-data)
+   ↓
+3. POST /api/projects/create
+   ↓
+4. Verify authentication (JWT)
+   ↓
+5. Validate project data
+   ↓
+6. Upload files to S3
+   ↓
+7. Create project record (PostgreSQL)
+   ↓
+8. Create payment intent (Stripe)
+   ↓
+9. Send notification email to admin
+   ↓
+10. Return project ID + payment URL
+   ↓
+11. Redirect to payment page
+```
+
+#### AI Chatbot Flow
+
+```
+1. User sends message
+   ↓
+2. WebSocket or POST /api/chatbot/message
+   ↓
+3. Rate limit check (Redis)
+   ↓
+4. Load conversation history (PostgreSQL)
+   ↓
+5. Build context for AI
+   ↓
+6. Call Gemini API
+   ↓
+7. Stream response back to user
+   ↓
+8. Save message to database
+   ↓
+9. Update conversation metadata
+```
+
+---
+
+## 4. Database Schema Design
+
+### Complete PostgreSQL Schema
+
+```sql
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    avatar_url TEXT,
+    is_admin BOOLEAN DEFAULT FALSE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    reset_password_token VARCHAR(255),
+    reset_password_expires TIMESTAMP,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP,
+    
+    -- Indexes
+    CONSTRAINT email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$')
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_uuid ON users(uuid);
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
+
+-- Projects table
+CREATE TABLE projects (
+    id SERIAL PRIMARY KEY,
+    uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    service_type VARCHAR(50) NOT NULL, -- 'mixing', 'mastering', 'design', 'website'
+    package VARCHAR(50) NOT NULL, -- 'basic', 'pro', 'premium'
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'in_progress', 'review', 'completed', 'cancelled'
+    priority VARCHAR(20) DEFAULT 'normal', -- 'low', 'normal', 'high', 'urgent'
+    price DECIMAL(10, 2) NOT NULL,
+    paid BOOLEAN DEFAULT FALSE,
+    eta TIMESTAMP,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    
+    -- Constraints
+    CONSTRAINT valid_service_type CHECK (service_type IN ('mixing', 'mastering', 'design', 'website', 'consultation')),
+    CONSTRAINT valid_package CHECK (package IN ('basic', 'pro', 'premium', 'custom')),
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'in_progress', 'review', 'completed', 'cancelled', 'refunded')),
+    CONSTRAINT positive_price CHECK (price >= 0)
+);
+
+CREATE INDEX idx_projects_user_id ON projects(user_id);
+CREATE INDEX idx_projects_status ON projects(status);
+CREATE INDEX idx_projects_created_at ON projects(created_at DESC);
+CREATE INDEX idx_projects_eta ON projects(eta);
+
+-- Project files table
+CREATE TABLE project_files (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_type VARCHAR(100),
+    file_url TEXT NOT NULL,
+    s3_key VARCHAR(500),
+    upload_type VARCHAR(50) NOT NULL, -- 'input', 'output', 'reference'
+    status VARCHAR(50) DEFAULT 'uploaded', -- 'uploaded', 'processing', 'completed', 'failed'
+    uploaded_at TIMESTAMP DEFAULT NOW(),
+    
+    CONSTRAINT valid_upload_type CHECK (upload_type IN ('input', 'output', 'reference', 'revision'))
+);
+
+CREATE INDEX idx_project_files_project_id ON project_files(project_id);
+CREATE INDEX idx_project_files_upload_type ON project_files(upload_type);
+
+-- Payments table
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+    stripe_payment_intent_id VARCHAR(255) UNIQUE,
+    amount DECIMAL(10, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'succeeded', 'failed', 'refunded'
+    payment_method VARCHAR(50),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    
+    CONSTRAINT positive_amount CHECK (amount > 0)
+);
+
+CREATE INDEX idx_payments_user_id ON payments(user_id);
+CREATE INDEX idx_payments_project_id ON payments(project_id);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_stripe_id ON payments(stripe_payment_intent_id);
+
+-- Chatbot conversations table
+CREATE TABLE chatbot_conversations (
+    id SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(255) UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    user_name VARCHAR(255) DEFAULT 'Guest',
+    user_email VARCHAR(255),
+    messages JSONB NOT NULL DEFAULT '[]',
+    metadata JSONB,
+    email_sent BOOLEAN DEFAULT FALSE,
+    email_sent_at TIMESTAMP,
+    ended_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_chatbot_conversation_id ON chatbot_conversations(conversation_id);
+CREATE INDEX idx_chatbot_user_id ON chatbot_conversations(user_id);
+CREATE INDEX idx_chatbot_created_at ON chatbot_conversations(created_at DESC);
+CREATE INDEX idx_chatbot_email_sent ON chatbot_conversations(email_sent);
+
+-- Loyalty program table
+CREATE TABLE loyalty (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    mixes_completed INTEGER DEFAULT 0,
+    masters_completed INTEGER DEFAULT 0,
+    total_spent DECIMAL(10, 2) DEFAULT 0,
+    points INTEGER DEFAULT 0,
+    tier VARCHAR(50) DEFAULT 'bronze', -- 'bronze', 'silver', 'gold', 'platinum'
+    free_masters_available INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    
+    CONSTRAINT valid_tier CHECK (tier IN ('bronze', 'silver', 'gold', 'platinum'))
+);
+
+CREATE INDEX idx_loyalty_user_id ON loyalty(user_id);
+CREATE INDEX idx_loyalty_tier ON loyalty(tier);
+
+-- Referrals table
+CREATE TABLE referrals (
+    id SERIAL PRIMARY KEY,
+    referrer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    referred_email VARCHAR(255) NOT NULL,
+    referred_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'signed_up', 'completed'
+    reward_given BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    completed_at TIMESTAMP
+);
+
+CREATE INDEX idx_referrals_referrer_id ON referrals(referrer_id);
+CREATE INDEX idx_referrals_referred_email ON referrals(referred_email);
+CREATE INDEX idx_referrals_status ON referrals(status);
+
+-- Referral activity tracking
+CREATE TABLE referral_activity (
+    id SERIAL PRIMARY KEY,
+    referral_id INTEGER REFERENCES referrals(id) ON DELETE CASCADE,
+    referred_projects_completed INTEGER DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Consultations table
+CREATE TABLE consultations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    consultation_type VARCHAR(100) NOT NULL,
+    scheduled_at TIMESTAMP NOT NULL,
+    duration_minutes INTEGER DEFAULT 30,
+    status VARCHAR(50) DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled', 'no_show'
+    notes TEXT,
+    zoom_link TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_consultations_user_id ON consultations(user_id);
+CREATE INDEX idx_consultations_scheduled_at ON consultations(scheduled_at);
+CREATE INDEX idx_consultations_status ON consultations(status);
+
+-- Reviews/Testimonials table
+CREATE TABLE reviews (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title VARCHAR(255),
+    comment TEXT,
+    is_featured BOOLEAN DEFAULT FALSE,
+    is_approved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_reviews_project_id ON reviews(project_id);
+CREATE INDEX idx_reviews_rating ON reviews(rating);
+CREATE INDEX idx_reviews_is_featured ON reviews(is_featured);
+
+-- Email logs table (for tracking)
+CREATE TABLE email_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    email_type VARCHAR(100) NOT NULL, -- 'welcome', 'project_update', 'payment_receipt', etc.
+    recipient_email VARCHAR(255) NOT NULL,
+    subject VARCHAR(500),
+    status VARCHAR(50) DEFAULT 'sent', -- 'sent', 'delivered', 'failed', 'bounced'
+    provider_message_id VARCHAR(255),
+    error_message TEXT,
+    sent_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_email_logs_user_id ON email_logs(user_id);
+CREATE INDEX idx_email_logs_email_type ON email_logs(email_type);
+CREATE INDEX idx_email_logs_status ON email_logs(status);
+CREATE INDEX idx_email_logs_sent_at ON email_logs(sent_at DESC);
+
+-- Activity logs table (audit trail)
+CREATE TABLE activity_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL, -- 'login', 'logout', 'project_created', 'payment_made', etc.
+    entity_type VARCHAR(50), -- 'user', 'project', 'payment', etc.
+    entity_id INTEGER,
+    ip_address INET,
+    user_agent TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
+CREATE INDEX idx_activity_logs_action ON activity_logs(action);
+CREATE INDEX idx_activity_logs_created_at ON activity_logs(created_at DESC);
+
+-- Sessions table (for JWT blacklisting/management)
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    token_jti VARCHAR(255) UNIQUE NOT NULL, -- JWT ID
+    expires_at TIMESTAMP NOT NULL,
+    ip_address INET,
+    user_agent TEXT,
+    is_revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_token_jti ON sessions(token_jti);
+CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+
+-- Notifications table
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(100) NOT NULL, -- 'project_update', 'payment_received', 'new_message', etc.
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    link VARCHAR(500),
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
+
+-- System settings table
+CREATE TABLE system_settings (
+    id SERIAL PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value JSONB NOT NULL,
+    description TEXT,
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Triggers for updated_at timestamps
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON payments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_chatbot_conversations_updated_at BEFORE UPDATE ON chatbot_conversations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_loyalty_updated_at BEFORE UPDATE ON loyalty
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Views for common queries
+CREATE VIEW user_project_summary AS
+SELECT 
+    u.id as user_id,
+    u.email,
+    u.name,
+    COUNT(p.id) as total_projects,
+    COUNT(CASE WHEN p.status = 'completed' THEN 1 END) as completed_projects,
+    COUNT(CASE WHEN p.status = 'in_progress' THEN 1 END) as active_projects,
+    SUM(p.price) as total_spent,
+    MAX(p.created_at) as last_project_date
+FROM users u
+LEFT JOIN projects p ON u.id = p.user_id
+GROUP BY u.id, u.email, u.name;
+
+-- Initial admin user (change password after first login!)
+INSERT INTO users (email, password_hash, name, is_admin, is_verified)
+VALUES (
+    'admin@tysunmike.us',
+    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIeWeCrm4u', -- 'changeme123'
+    'Admin User',
+    TRUE,
+    TRUE
+);
+```
+
+### Database Optimization Strategies
+
+#### Indexing Strategy
+
+1. **Primary Keys:** Automatic B-tree indexes
+2. **Foreign Keys:** Indexed for JOIN performance
+3. **Frequently Queried Columns:** email, status, created_at
+4. **Composite Indexes:** For multi-column WHERE clauses
+5. **Partial Indexes:** For specific status values
+
+#### Query Optimization
+
+```sql
+-- Example: Efficient project listing with pagination
+SELECT 
+    p.*,
+    u.name as user_name,
+    u.email as user_email,
+    COUNT(pf.id) as file_count
+FROM projects p
+INNER JOIN users u ON p.user_id = u.id
+LEFT JOIN project_files pf ON p.id = pf.project_id
+WHERE p.status = 'in_progress'
+GROUP BY p.id, u.name, u.email
+ORDER BY p.created_at DESC
+LIMIT 20 OFFSET 0;
+
+-- Use prepared statements to prevent SQL injection
+-- Use connection pooling (pg.Pool)
+-- Use transactions for multi-step operations
+```
+
+#### Caching Strategy (Redis)
+
+```javascript
+// Cache frequently accessed data
+const cacheKeys = {
+    userById: (id) => `user:${id}`,
+    projectById: (id) => `project:${id}`,
+    userProjects: (userId) => `user:${userId}:projects`,
+    stats: 'stats:dashboard',
+};
+
+// Cache TTL (Time To Live)
+const cacheTTL = {
+    user: 3600, // 1 hour
+    project: 1800, // 30 minutes
+    stats: 300, // 5 minutes
+};
+
+// Example caching implementation
+async function getUserById(id) {
+    const cacheKey = cacheKeys.userById(id);
+    
+    // Try cache first
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+    
+    // Query database
+    const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    
+    // Store in cache
+    await redis.setex(cacheKey, cacheTTL.user, JSON.stringify(user));
+    
+    return user;
+}
+```
+
+---
+
+## 5. Development Environment Setup
+
+### Local Development Setup
+
+#### Prerequisites
+
+```bash
+# Required software
+- Node.js 20 LTS
+- PostgreSQL 15
+- Redis 7
+- Git
+- VS Code (recommended) or your preferred IDE
+
+# Optional but recommended
+- Docker & Docker Compose
+- Postman or Insomnia (API testing)
+- pgAdmin or DBeaver (database management)
+```
+
+#### Step 1: Install Node.js
+
+```bash
+# Using nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 20
+nvm use 20
+node --version  # Should show v20.x.x
+
+# Or download from nodejs.org
+```
+
+#### Step 2: Install PostgreSQL
+
+```bash
+# macOS
+brew install postgresql@15
+brew services start postgresql@15
+
+# Ubuntu/Debian
+sudo apt update
+sudo apt install postgresql-15 postgresql-contrib-15
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Windows
+# Download installer from postgresql.org
+
+# Create database
+createdb tysunmikepro_dev
+```
+
+#### Step 3: Install Redis
+
+```bash
+# macOS
+brew install redis
+brew services start redis
+
+# Ubuntu/Debian
+sudo apt install redis-server
+sudo systemctl start redis
+sudo systemctl enable redis
+
+# Windows
+# Use WSL or download from redis.io
+```
+
+#### Step 4: Clone and Setup Project
+
+```bash
+# Clone repository
+git clone https://github.com/TysunM/TysunMikePro.git
+cd TysunMikePro
+
+# Install dependencies
+npm install
+
+# Create .env file
+cp .env.example .env
+
+# Edit .env with your credentials
+nano .env
+```
+
+#### Step 5: Environment Variables
+
+Create `.env` file:
+
+```env
+# Application
+NODE_ENV=development
+PORT=8080
+BASE_URL=http://localhost:8080
+
+# Database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/tysunmikepro_dev
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
+
+# Email (Development - use Mailtrap)
+SMTP_HOST=smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USER=your-mailtrap-username
+SMTP_PASS=your-mailtrap-password
+MAIL_FROM="Tysun Mike Productions <noreply@tysunmike.us>"
+
+# Email (Production - use SendGrid)
+# SENDGRID_API_KEY=your-sendgrid-api-key
+
+# Google Gemini AI
+GEMINI_API_KEY=your-gemini-api-key
+
+# Stripe (use test keys in development)
+STRIPE_SECRET_KEY=sk_test_your_stripe_test_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_test_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# AWS S3 (or use local storage in development)
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=tysunmikepro-uploads
+
+# Admin
+ADMIN_EMAIL=admin@tysunmike.us
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
+
+# File Upload
+MAX_FILE_SIZE=104857600  # 100MB in bytes
+ALLOWED_FILE_TYPES=.mp3,.wav,.flac,.aiff,.zip,.rar
+
+# Logging
+LOG_LEVEL=debug  # debug, info, warn, error
+
+# Security
+BCRYPT_ROUNDS=12
+SESSION_SECRET=your-session-secret-change-this
+
+# CORS
+CORS_ORIGIN=http://localhost:3000,http://localhost:8080
+
+# Analytics (optional)
+GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+```
+
+#### Step 6: Database Migration
+
+```bash
+# Run migrations
+npm run db:migrate
+
+# Or manually
+psql -d tysunmikepro_dev -f db.sql
+psql -d tysunmikepro_dev -f db_chatbot_migration.sql
+
+# Seed database with sample data (optional)
+npm run db:seed
+```
+
+#### Step 7: Start Development Server
+
+```bash
+# Start all services
+npm run dev
+
+# Or start individually
+npm run dev:server   # Backend only
+npm run dev:client   # Frontend only (if using React)
+
+# Watch mode with nodemon
+npm run dev:watch
+```
+
+#### Step 8: Verify Setup
+
+```bash
+# Test database connection
+npm run db:test
+
+# Test Redis connection
+npm run redis:test
+
+# Run health check
+curl http://localhost:8080/api/health
+
+# Expected response:
+# {
+#   "status": "ok",
+#   "timestamp": "2024-01-01T00:00:00.000Z",
+#   "services": {
+#     "database": "connected",
+#     "redis": "connected",
+#     "email": "configured"
+#   }
+# }
+```
+
+### Docker Setup (Alternative)
+
+Create `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/tysunmikepro
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+    command: npm run dev
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=tysunmikepro
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+Start with Docker:
+
+```bash
+docker-compose up -d
+```
+
+### VS Code Setup
+
+Install recommended extensions:
+
+```json
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "prisma.prisma",
+    "github.copilot",
+    "eamodio.gitlens",
+    "christian-kohler.path-intellisense",
+    "ms-azuretools.vscode-docker"
+  ]
+}
+```
+
+Configure `.vscode/settings.json`:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}
+```
+
+---
+
+This completes Phase 1 of the guide. The document continues with Phases 2-6 covering development, deployment, and production operations.
+
+**Next sections include:**
+- Backend API Development
+- Frontend Development
+- Security Implementation
+- Performance Optimization
+- Deployment Strategies
+- Monitoring & Maintenance
+
+Would you like me to continue with the remaining phases?
+
