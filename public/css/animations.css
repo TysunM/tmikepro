@@ -1,0 +1,391 @@
+/**
+ * Elite Animations & Effects
+ * Smooth scrolling, parallax, on-scroll reveals, and fluid transitions
+ */
+
+/* ============================================
+   SMOOTH SCROLL BEHAVIOR
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 120px;
+}
+
+/* Disable smooth scroll for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   PARALLAX EFFECTS
+   ============================================ */
+
+.parallax-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+}
+
+/* Subtle parallax on scroll */
+.parallax-layer.slow {
+  transform: translateZ(0);
+}
+
+/* ============================================
+   ON-SCROLL REVEAL ANIMATIONS
+   ============================================ */
+
+/* Fade In Up */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Fade In Left */
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Fade In Right */
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Fade In Scale */
+.fade-in-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger animations for lists */
+.fade-in-up:nth-child(1) { transition-delay: 0.1s; }
+.fade-in-up:nth-child(2) { transition-delay: 0.2s; }
+.fade-in-up:nth-child(3) { transition-delay: 0.3s; }
+.fade-in-up:nth-child(4) { transition-delay: 0.4s; }
+.fade-in-up:nth-child(5) { transition-delay: 0.5s; }
+.fade-in-up:nth-child(6) { transition-delay: 0.6s; }
+.fade-in-up:nth-child(n+7) { transition-delay: 0.7s; }
+
+/* ============================================
+   IMAGE & MEDIA TRANSITIONS
+   ============================================ */
+
+/* Lazy Load Placeholder */
+.lazy-load {
+  background: linear-gradient(90deg, rgba(0, 255, 200, 0.1) 25%, rgba(0, 255, 200, 0.05) 50%, rgba(0, 255, 200, 0.1) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Image Hover Effects */
+.image-hover {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.image-hover img {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
+  will-change: transform;
+}
+
+.image-hover:hover img {
+  transform: scale(1.08) rotate(0.5deg);
+  filter: brightness(1.1);
+}
+
+/* Portfolio Item Hover */
+.portfolio-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.portfolio-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 200, 0.3), transparent);
+  transition: left 0.5s ease;
+  z-index: 1;
+}
+
+.portfolio-item:hover::before {
+  left: 100%;
+}
+
+.portfolio-item img {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease;
+}
+
+.portfolio-item:hover img {
+  transform: scale(1.12);
+  filter: saturate(1.2) brightness(1.1);
+}
+
+/* ============================================
+   BUTTON & CTA ANIMATIONS
+   ============================================ */
+
+/* Button Base Styles */
+button, .btn, a.cta-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, box-shadow;
+}
+
+/* Ripple Effect on Click */
+button::after, .btn::after, a.cta-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+button:active::after, .btn:active::after, a.cta-button:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Hover State Animation */
+.cta-button {
+  box-shadow: 0 4px 15px rgba(0, 255, 200, 0.2);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 200, 0.4);
+}
+
+.cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 255, 200, 0.3);
+}
+
+/* Icon Movement in Buttons */
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-with-icon svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-with-icon:hover svg {
+  transform: translateX(4px);
+}
+
+/* ============================================
+   PAGE & STATE TRANSITIONS
+   ============================================ */
+
+/* Fade Transition */
+.fade-transition {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide Transition */
+.slide-transition {
+  animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   INTERACTIVE ELEMENTS
+   ============================================ */
+
+/* Link Hover Underline */
+a.nav-link {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent, #00FFC8);
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+a.nav-link:hover::after {
+  width: 100%;
+}
+
+/* ============================================
+   SCROLL PROGRESS INDICATOR
+   ============================================ */
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent, #00FFC8), var(--accent, #00FFC8));
+  width: 0%;
+  z-index: 9999;
+  transition: width 0.1s ease;
+}
+
+/* ============================================
+   FLOATING ELEMENTS
+   ============================================ */
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* ============================================
+   GLOW EFFECTS
+   ============================================ */
+
+.glow-effect {
+  text-shadow: 
+    0 0 10px rgba(0, 255, 200, 0.8),
+    0 0 20px rgba(0, 255, 200, 0.6),
+    0 0 30px rgba(0, 255, 200, 0.4);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(0, 255, 200, 0.8),
+      0 0 20px rgba(0, 255, 200, 0.6),
+      0 0 30px rgba(0, 255, 200, 0.4);
+  }
+  50% {
+    text-shadow: 
+      0 0 15px rgba(0, 255, 200, 1),
+      0 0 30px rgba(0, 255, 200, 0.8),
+      0 0 45px rgba(0, 255, 200, 0.6);
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .fade-in-left, .fade-in-right {
+    transform: translateY(30px);
+  }
+
+  .fade-in-left.visible, .fade-in-right.visible {
+    transform: translateY(0);
+  }
+
+  /* Reduce animation delays on mobile */
+  .fade-in-up:nth-child(1) { transition-delay: 0.05s; }
+  .fade-in-up:nth-child(2) { transition-delay: 0.1s; }
+  .fade-in-up:nth-child(3) { transition-delay: 0.15s; }
+  .fade-in-up:nth-child(4) { transition-delay: 0.2s; }
+  .fade-in-up:nth-child(5) { transition-delay: 0.25s; }
+  .fade-in-up:nth-child(6) { transition-delay: 0.3s; }
+  .fade-in-up:nth-child(n+7) { transition-delay: 0.35s; }
+}
