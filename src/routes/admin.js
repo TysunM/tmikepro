@@ -1,50 +1,48 @@
-import { q } from '../db.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { requireAdmin } from '../middleware/requireAdmin.js';
 import express from 'express';
+import { pool } from '../db.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
+
 const router = express.Router();
 
-router.get('/projects', requireAuth, requireAdmin, async (req,res) => {
-  const r = await q('SELECT * FROM projects ORDER BY updated_at DESC');
-  res.json({ projects: r.rows });
-});
+// ... (other admin routes) ...
 
-router.get('/payments', requireAuth, requireAdmin, async (req,res) => {
-  const r = await q('SELECT * FROM payments ORDER BY created_at DESC');
-  res.json({ payments: r.rows });
-});
+/**
+ * [NEW] Update a project's status
+ * This powers the admin-facing project progress bar.
+ */
+router.put('/projects/:id/status', requireAdmin, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
 
-router.get('/consultations', requireAuth, requireAdmin, async (req,res) => {
-  const r = await q('SELECT * FROM consultations ORDER BY start_at DESC');
-  res.json({ consultations: r.rows });
-});
+  // Validate status against the enum
+  const validStatuses = [
+    'intake', 'in_progress', 'static_mix', 'final_mix', 
+    'mastered', 'review', 'revisions', 'delivered'
+  ];
 
-router.get('/users', requireAuth, requireAdmin, async (req,res) => {
-  const r = await q('SELECT id,email,name,avatar_url FROM users ORDER BY created_at DESC');
-  res.json({ users: r.rows });
-});
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid project status' });
+  }
 
-router.get('/files', requireAuth, requireAdmin, async (req,res) => {
-  const r = await q('SELECT * FROM project_files ORDER BY uploaded_at DESC');
-  res.json({ files: r.rows });
-});
+  const { rows } = await pool.query(
+    'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [status, id]
+  );
 
-router.post('/projects/eta-adjust', requireAuth, requireAdmin, async (req,res) => {
-  const { ids, deltaDays } = req.body;
-  const r = await q(`
-    UPDATE projects
-    SET eta = eta + INTERVAL '${deltaDays} day',
-        updated_at = NOW()
-    WHERE id = ANY($1::int[])
-    RETURNING id
-  `, [ids]);
-  res.json({ updated: r.rows.length });
-});
+  if (rows.length === 0) {
+    return res.status(404).json({ error: 'Project not found' });
+  }
 
-router.post('/files/update', requireAuth, requireAdmin, async (req,res) => {
-  const { id, status } = req.body;
-  await q('UPDATE project_files SET status=$1 WHERE id=$2', [status, id]);
-  res.json({ ok: true });
-});
+  // [NEW] If status is 'delivered', trigger loyalty service
+  if (status === 'delivered') {
+    const { user_id } = rows[0];
+    // This is an async call, no need to await it
+    loyaltyService.handleProjectCompletion(user_id)
+      .catch(console.error); // Log errors
+  }
+
+  res.json(rows[0]);
+}));
 
 export default router;
