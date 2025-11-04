@@ -22,6 +22,7 @@ const projectRoutes = require('./src/routes/projects');
 const referralRoutes = require('./src/routes/referrals');
 const adminRoutes = require('./src/routes/admin');
 const chatbotRoutes = require('./src/routes/chatbot');
+const paymentRoutes = require('./src/routes/payments'); // --- ADDED THIS LINE ---
 
 // --- APP INITIALIZATION ---
 const app = express();
@@ -47,8 +48,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "https://cdn.tailwindcss.com", "https://js.stripe.com"], // Allow scripts from self, tailwind, stripe
-      "frame-src": ["'self'", "https://js.stripe.com"], // Allow frames for Stripe
+      "script-src": ["'self'", "https://cdn.tailwindcss.com", "https://js.stripe.com", "https://www.paypal.com"], // Allow scripts from self, tailwind, stripe, paypal
+      "frame-src": ["'self'", "https://js.stripe.com", "https://www.paypal.com"], // Allow frames for Stripe and PayPal
     },
   },
 }));
@@ -71,6 +72,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/payments', paymentRoutes); // --- ADDED THIS LINE ---
 
 // --- VIEW ROUTES (Project B) ---
 // These routes serve your HTML pages from the 'views' directory
