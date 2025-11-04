@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome - Our Website</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Page Loader -->
+  <div id="loader-wrapper">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main Content (Hidden until page load) -->
+  <div id="main-content">
+
+    <!-- Header -->
+    <header class="main-header">
+      <div class="container">
+        <a href="/" class="logo">WebPro</a>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <!-- Auth Links -->
+            <li><a id="login-link" href="/login">Login</a></li>
+            <li><a id="signup-link" href="/signup" class="btn btn-primary">Sign Up</a></li>
+            <li><a id="dashboard-link" href="/dashboard">Dashboard</a></li>
+            <li><a id="logout-link" href="#">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>Next-Generation Web Solutions</h1>
+        <p>We build fully integrated, production-ready websites with AI, payment processing, and real database backends.</p>
+        <a href="#pricing" class="btn btn-primary">Get Started</a>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section section">
+      <div class="container">
+        <h2>Our Packages</h2>
+        <div class="pricing-grid">
+          <!-- Package 1 -->
+          <div class="pricing-card">
+            <h3>Starter</h3>
+            <div class="price">$150.00 <span>/ one-time</span></div>
+            <ul>
+              <li>Initial Consultation</li>
+              <li>Basic Website Setup</li>
+              <li>Email Support</li>
+            </ul>
+            <button class="btn btn-primary purchase-btn" 
+                    data-package-name="Starter" 
+                    data-package-price="150.00">
+              Purchase Now
+            </button>
+          </div>
+          <!-- Package 2 -->
+          <div class="pricing-card">
+            <h3>Pro</h3>
+            <div class="price">$450.00 <span>/ one-time</span></div>
+            <ul>
+              <li>Full Website Setup</li>
+              <li>Database Integration</li>
+              <li>Priority Email Support</li>
+            </ul>
+            <button class="btn btn-primary purchase-btn" 
+                    data-package-name="Pro" 
+                    data-package-price="450.00">
+              Purchase Now
+            </button>
+          </div>
+          <!-- Package 3 -->
+          <div class="pricing-card">
+            <h3>Enterprise</h3>
+            <div class="price">$950.00 <span>/ one-time</span></div>
+            <ul>
+              <li>Full Setup + AI Chatbot</li>
+              <li>Payment Integration</li>
+              <li>24/7 Phone Support</li>
+            </ul>
+            <button class="btn btn-primary purchase-btn" 
+                    data-package-name="Enterprise" 
+                    data-package-price="950.00">
+              Purchase Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section section">
+      <div class="container">
+        <h2>Get In Touch</h2>
+        <form id="contact-form" class="form-container">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+          <div id="form-status" class="form-status"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="container">
+        <p>&copy; 2025 WebPro. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- AI Chatbot Widget -->
+    <div id="ai-chatbot-widget">
+      <!-- (This will be hidden/shown by main.js based on auth) -->
+    </div>
+
+  </div> <!-- /main-content -->
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
