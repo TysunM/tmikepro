@@ -23,6 +23,7 @@
     "pg": "^8.12.0"
   },
   "devDependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3"
     "nodemon": "^3.1.4"
   }
 }
