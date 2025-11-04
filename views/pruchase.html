@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Purchase - WebPro</title>
+  
+  <!-- This links to YOUR existing CSS from Project B -->
+  <link rel="stylesheet" href="/css/modern.css">
+  
+  <!-- We can still use the 'style.css' for page-specific additions if needed -->
+  <link rel="stylesheet" href="/css/style.css"> 
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-main">
+
+  <!-- Header (from your views/index.html) -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="/" class="text-3xl font-bold font-logo text-primary">WebPro</a>
+      <!-- Add nav links if needed -->
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" class="container mx-auto px-6 py-12">
+    
+    <div class="purchase-flow max-w-3xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+      
+      <!-- Step 1: Loading/Checking -->
+      <div class="purchase-step active" id="step-loading">
+        <div class="p-8 text-center">
+          <div class="spinner w-12 h-12 border-4 border-t-primary border-gray-200 rounded-full animate-spin mx-auto"></div>
+          <p id="loading-message" class="mt-4 text-lg text-gray-600">Verifying your session...</p>
+        </div>
+      </div>
+
+      <!-- Step 2: Schedule -->
+      <div class="purchase-step" id="step-schedule">
+        <div class="p-8">
+          <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Schedule Your Consultation</h2>
+          <p class="text-center text-gray-600 mb-4">Please select a date and time.</p>
+          <div id="calendar-picker" class="form-group rounded-md shadow-inner"></div>
+          <div id="schedule-error" class="text-red-500 text-center mt-4 hidden"></div>
+          <div class="step-nav mt-8 pt-6 border-t">
+            <button id="btn-to-payment" class="btn btn-primary w-full" disabled>Continue to Payment</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Payment -->
+      <div class="purchase-step" id="step-payment">
+        <div class="p-8">
+          <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Complete Your Purchase</h2>
+          <div id="payment-summary" class="bg-gray-50 p-6 rounded-lg mb-6 shadow-inner">
+            <p class="text-lg flex justify-between mb-2">Package: <span id="summary-package-name" class="font-semibold text-gray-700">...</span></p>
+            <p class="text-lg flex justify-between mb-2">Price: <span id="summary-package-price" class="font-semibold text-gray-700">...</span></p>
+            <p class="text-lg flex justify-between">Time: <span id="summary-schedule-time" class="font-semibold text-gray-700">...</span></p>
+          </div>
+          <p class="text-center text-gray-600 mb-4">Please complete your payment using PayPal.</p>
+          <div id="paypal-button-container" class="mt-6 z-10">
+            <!-- PayPal buttons will render here -->
+          </div>
+          <div id="payment-message" class="text-red-500 text-center mt-4 hidden"></div>
+          <div class="step-nav mt-8 pt-6 border-t">
+            <button id="btn-back-schedule" class="btn btn-secondary w-full">Back to Schedule</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 4: Thank You -->
+      <div class="purchase-step" id="step-thanks">
+        <div class="p-8 text-center">
+          <h2 class="text-3xl font-semibold text-green-600 mb-4">Thank You!</h2>
+          <p class="text-lg text-gray-700 mb-2">Your payment was successful and your consultation is booked.</p>
+          <p class="text-gray-600">A confirmation email has been sent to <strong id="final-user-email" class="text-gray-800">...</strong>.</p>
+          <p class="text-gray-600 mt-4">Your Order ID is: <strong id="final-order-id" class="text-gray-800">...</strong></p>
+          <a href="/dashboard" class="btn btn-primary mt-8">Go to Dashboard</a>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer (from your views/index.html) -->
+  <footer class="bg-gray-800 text-gray-300 mt-auto">
+    <div class="container mx-auto px-6 py-8 text-center">
+      <p>&copy; 2025 WebPro. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- AI Chatbot will be loaded by main.js -->
+  
+  <!-- JAVASCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <!-- These are YOUR scripts from Project B -->
+  <script src="/js/main.js"></script>
+  <script src="/js/chatbot.js"></script> 
+  
+  <!-- This is the NEW purchase script -->
+  <script src="/js/purchase.js"></script>
+</body>
+</html>
