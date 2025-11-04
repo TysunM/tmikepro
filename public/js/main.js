@@ -1,159 +1,650 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- Page Loader ---
-    const loader = document.getElementById('loader-wrapper');
-    const mainContent = document.getElementById('main-content');
-    
-    window.addEventListener('load', () => {
-        if (loader) {
-            loader.style.opacity = '0';
-            loader.style.visibility = 'hidden';
-        }
-        if (mainContent) {
-            mainContent.style.visibility = 'visible';
-            mainContent.style.opacity = '1'; /* You can add opacity transition in CSS */
-        }
-    });
-    
-    // Fallback if load event is slow
-    setTimeout(() => {
-        if (loader) {
-            loader.style.opacity = '0';
-            loader.style.visibility = 'hidden';
-        }
-        if (mainContent) {
-            mainContent.style.visibility = 'visible';
-            mainContent.style.opacity = '1';
-        }
-    }, 2000);
+/* --- GLOBAL & VARIABLES --- */
+:root {
+  --primary-color: #0a4d90;
+  --secondary-color: #0c63c5;
+  --accent-color: #f0c419;
+  --light-gray: #f4f7f6;
+  --dark-gray: #333;
+  --text-color: #212529;
+  --success: #28a745;
+  --danger: #dc3545;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-    // --- Authentication State ---
-    const loginLink = document.getElementById('login-link');
-    const signupLink = document.getElementById('signup-link');
-    const dashboardLink = document.getElementById('dashboard-link');
-    const logoutLink = document.getElementById('logout-link');
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    // Check auth status
-    fetch('/api/users/check-auth')
-        .then(res => res.json())
-        .then(data => {
-            if (data.isAuthenticated) {
-                if (loginLink) loginLink.style.display = 'none';
-                if (signupLink) signupLink.style.display = 'none';
-                if (dashboardLink) dashboardLink.style.display = 'block';
-                if (logoutLink) logoutLink.style.display = 'block';
-            } else {
-                if (loginLink) loginLink.style.display = 'block';
-                if (signupLink) signupLink.style.display = 'block';
-                if (dashboardLink) dashboardLink.style.display = 'none';
-                if (logoutLink) logoutLink.style.display = 'none';
-            }
-        })
-        .catch(err => {
-            console.error('Error checking auth status:', err);
-            // Show default state (logged out)
-            if (loginLink) loginLink.style.display = 'block';
-            if (signupLink) signupLink.style.display = 'block';
-            if (dashboardLink) dashboardLink.style.display = 'none';
-            if (logoutLink) logoutLink.style.display = 'none';
-        });
+body {
+  font-family: var(--font-main);
+  background-color: #ffffff;
+  color: var(--text-color);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
-    // Logout functionality
-    if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            fetch('/api/auth/logout', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = '/';
-                    }
-                })
-                .catch(err => console.error('Logout failed:', err));
-        });
-    }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-    // --- Contact Form ---
-    const contactForm = document.getElementById('contact-form');
-    const formStatus = document.getElementById('form-status');
+/* --- UTILITIES --- */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  text-align: center;
+}
 
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(contactForm);
-            const data = Object.fromEntries(formData.entries());
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #fff;
+}
 
-            if (formStatus) formStatus.textContent = 'Sending...';
-            
-            // NOTE: This assumes you have a /api/contact endpoint
-            // This is a mock-up, replace with your actual endpoint
-            fetch('/api/contact', { // <--- CREATE THIS ENDPOINT IN server.js
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-            .then(res => res.json())
-            .then(response => {
-                if (response.success) {
-                    if (formStatus) {
-                        formStatus.textContent = 'Message sent successfully!';
-                        formStatus.style.color = 'green';
-                    }
-                    contactForm.reset();
-                } else {
-                    if (formStatus) {
-                        formStatus.textContent = response.message || 'An error occurred.';
-                        formStatus.style.color = 'red';
-                    }
-                }
-            })
-            .catch(err => {
-                if (formStatus) {
-                    formStatus.textContent = 'An error occurred. Please try again.';
-                    formStatus.style.color = 'red';
-                }
-                console.error('Contact form error:', err);
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    if (formStatus) formStatus.textContent = '';
-                }, 5000);
-            });
-        });
-    }
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
-    // --- NEW: Purchase Button Click Handler (Task 3) ---
-    const purchaseButtons = document.querySelectorAll('.purchase-btn');
-    
-    purchaseButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const packageName = button.dataset.packageName;
-            const packagePrice = button.dataset.packagePrice;
-            
-            if (packageName && packagePrice) {
-                // Store package info in localStorage to retrieve on the purchase page
-                const purchaseData = {
-                    name: packageName,
-                    price: packagePrice,
-                    timestamp: new Date().getTime() // Add timestamp for potential expiry
-                };
-                
-                try {
-                    localStorage.setItem('pendingPurchase', JSON.stringify(purchaseData));
-                    // Redirect to the new purchase page
-                    window.location.href = '/purchase';
-                } catch (error) {
-                    console.error("Error saving to localStorage", error);
-                    // Handle private browsing or full localStorage
-                    alert("Could not initiate purchase. Please ensure cookies and site data are enabled.");
-                }
-            } else {
-                console.error("Purchase button is missing data attributes", button);
-                alert("An error occurred. Could not get package details.");
-            }
-        });
-    });
+.btn-secondary {
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+}
 
-});
+.btn-secondary:hover {
+  background-color: #e2e6ea;
+}
+
+.btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- PAGE LOADER --- */
+#loader-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.spinner {
+  border: 6px solid var(--light-gray);
+  border-top: 6px solid var(--primary-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#main-content {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  flex: 1;
+}
+
+/* --- HEADER & NAV --- */
+.main-header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.main-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.main-nav ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+.main-nav li {
+  margin-left: 20px;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: var(--dark-gray);
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.main-nav a:hover, .main-nav a.active {
+  background-color: var(--light-gray);
+  color: var(--primary-color);
+}
+
+.main-nav .btn {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+}
+
+#dashboard-link, #logout-link {
+  display: none; /* Hidden by default */
+}
+
+
+/* --- FORMS (Login, Signup, Contact) --- */
+.form-container {
+  max-width: 450px;
+  margin: 4rem auto;
+  padding: 2.5rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+
+.form-container h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--dark-gray);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-main);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(10, 77, 144, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-container .btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+}
+
+.form-status, .form-message {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+.form-status.success, .form-message.success { color: var(--success); }
+.form-status.error, .form-message.error { color: var(--danger); }
+
+.form-container p {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.form-container p a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+.form-container p a:hover {
+  text-decoration: underline;
+}
+
+/* --- SECTIONS (Hero, Pricing, Contact) --- */
+.section {
+  padding: 4rem 0;
+}
+
+.hero {
+  text-align: center;
+  padding: 6rem 0;
+  background-color: var(--light-gray);
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  color: var(--dark-gray);
+  line-height: 1.2;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: #555;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.pricing-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.pricing-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.pricing-card .price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.pricing-card .price span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #777;
+}
+
+.pricing-card ul {
+  list-style: none;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.pricing-card li {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.pricing-card li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: 700;
+  position: absolute;
+  left: 0;
+}
+
+.contact-section h2, .pricing-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+/* --- PURCHASE FLOW (Multi-step) --- */
+.purchase-flow {
+  max-width: 700px;
+  margin: 3rem auto;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.purchase-step {
+  display: none;
+  padding: 2.5rem 3rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.purchase-step.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.purchase-step h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--dark-gray);
+}
+
+#step-loading {
+  text-align: center;
+  padding: 4rem;
+}
+
+#loading-message {
+  font-size: 1.1rem;
+  color: #555;
+  margin-top: 1.5rem;
+}
+
+/* Flatpickr Calendar */
+.flatpickr-calendar {
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+.flatpickr-day.selected {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+#schedule-error {
+  color: var(--danger);
+  text-align: center;
+  margin-top: 1rem;
+  display: none;
+}
+
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 2rem;
+}
+
+#payment-summary {
+  background: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+#payment-summary p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+#payment-summary p span {
+  font-weight: 600;
+  color: var(--dark-gray);
+}
+
+#paypal-button-container {
+  margin-top: 1.5rem;
+  z-index: 10; /* Ensure PayPal button is on top */
+}
+
+#payment-message {
+  color: var(--danger);
+  text-align: center;
+  margin-top: 1rem;
+  display: none;
+}
+
+#step-thanks {
+  text-align: center;
+}
+#step-thanks h2 { color: var(--success); }
+#step-thanks p { font-size: 1.1rem; margin-bottom: 1rem; }
+#step-thanks .btn { margin-top: 1rem; }
+
+/* --- AI CHATBOT WIDGET --- */
+#chat-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+#chat-bubble:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.1);
+}
+
+#chat-window {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 350px;
+  max-width: 90vw;
+  height: 500px;
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#chat-window.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.chat-header {
+  padding: 1rem;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header h3 {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+#chat-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.8;
+}
+#chat-close-btn:hover { opacity: 1; }
+
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: var(--light-gray);
+}
+
+.chat-message {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-message .message-content {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+.chat-message.user {
+  align-items: flex-end;
+}
+.chat-message.user .message-content {
+  background: var(--secondary-color);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message.model {
+  align-items: flex-start;
+}
+.chat-message.model .message-content {
+  background: #e0e0e0;
+  color: var(--dark-gray);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message .typing-indicator {
+  display: flex;
+  align-items: center;
+}
+.chat-message .typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #aaa;
+  margin: 0 2px;
+  animation: typing-bubble 1.2s infinite ease-in-out;
+}
+.chat-message .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+.chat-message .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.chat-message .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bubble {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+.chat-input-area {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin-right: 10px;
+}
+#chat-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+#chat-send-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+#chat-send-btn:hover { background: var(--secondary-color); }
+
+/* --- FOOTER --- */
+.main-footer {
+  background: var(--dark-gray);
+  color: #f4f4f4;
+  text-align: center;
+  padding: 2rem 0;
+  margin-top: auto; /* Pushes footer to bottom */
+}
+
+/* --- RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  .main-nav ul {
+    flex-direction: column;
+    align-items: flex-start;
+    display: none; /* Add mobile menu toggle */
+  }
+  .main-header .container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .main-nav { margin-top: 1rem; }
+
+  .purchase-flow {
+    margin: 1rem;
+    padding: 0;
+  }
+  .purchase-step {
+    padding: 1.5rem;
+  }
+}
+
+
