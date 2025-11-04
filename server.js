@@ -11,70 +11,61 @@ import chatbotRoutes from './src/routes/chatbot.js';
 import { apiLimiter } from './src/middleware/rateLimiter.js';
 import { errorHandler, asyncHandler } from './src/middleware/errorHandler.js';
 
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const path = require('path');
+const apiRoutes = require('./routes/api');
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
+// --- Middleware ---
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Session Configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'a-very-strong-default-secret-key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS
 }));
 
-app.use(cors({ 
-  origin: true,
-  credentials: true 
-}));
+// Serve static files (HTML, CSS, JS) from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// --- API Routes ---
+// All API logic is handled by the 'api.js' router
+app.use('/api', apiRoutes);
 
-app.use(express.static('public', {
-  setHeaders: (res) => {
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  }
-}));
+// --- Page Serving ---
+// Serve the main pages.
+// This allows users to refresh pages like /purchase or /login
+// without getting a "Cannot GET /purchase" error.
 
-// Serve stock images
-app.use('/stock_images', express.static('attached_assets/stock_images', {
-  setHeaders: (res) => {
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  }
-}));
-
-// Apply rate limiting to API routes
-app.use('/api', apiLimiter);
-
-// Health check endpoint (no rate limiting)
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/referrals', referralRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/chatbot', chatbotRoutes);
-
-// View Routes
-import viewRoutes from './src/routes/views.js';
-app.use('/', viewRoutes);
-
-// Global 404 handler (for all unhandled routes)
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    // API 404
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  // HTML 404
-  res.status(404).sendFile(process.cwd() + '/views/404.html');
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Global error handler (must be last)
-app.use(errorHandler);
-
-app.listen(config.port, '0.0.0.0', () => {
-  console.log(`✨ Tysun Mike Portal running on port ${config.port}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔒 Security: Helmet, CORS, Rate Limiting enabled`);
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+app.get('/purchase', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'purchase.html'));
+});
+
+// --- Start Server ---
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
