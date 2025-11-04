@@ -1,71 +1,94 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import { config } from './src/config.js';
-import authRoutes from './src/routes/auth.js';
-import userRoutes from './src/routes/users.js';
-import projectRoutes from './src/routes/projects.js';
-import referralRoutes from './src/routes/referrals.js';
-import adminRoutes from './src/routes/admin.js';
-import chatbotRoutes from './src/routes/chatbot.js';
-import { apiLimiter } from './src/middleware/rateLimiter.js';
-import { errorHandler, asyncHandler } from './src/middleware/errorHandler.js';
-
+// --- LOAD ENVIRONMENT VARIABLES ---
+// This MUST be at the top
 require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const session = require('express-session');
-const path = require('path');
-const apiRoutes = require('./routes/api');
 
+// --- IMPORTS ---
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const apiRoutes = require('./routes/api'); // Our main API logic
+
+// --- VALIDATE ENV ---
+const requiredEnv = [
+  'SESSION_SECRET', 'JWT_SECRET', 'DATABASE_URL', 
+  'GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN',
+  'PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET', 'GEMINI_API_KEY'
+];
+
+// Check for GMAIL_USER_EMAIL separately as it's used by Nodemailer
+if (!process.env.GMAIL_USER_EMAIL) {
+    console.warn('WARNING: GMAIL_USER_EMAIL is not set in .env. Email features will fail.');
+}
+
+for (const v of requiredEnv) {
+  if (!process.env[v]) {
+    console.error(`FATAL ERROR: Environment variable ${v} is not set.`);
+    process.exit(1); // Exit if critical config is missing
+  }
+}
+
+// --- APP INITIALIZATION ---
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- Middleware ---
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// --- MIDDLEWARE ---
+// Body parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Session Configuration
+// Cookie parser
+app.use(cookieParser());
+
+// Session middleware
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'a-very-strong-default-secret-key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: process.env.NODE_ENV === 'production' } // Use secure cookies in production
 }));
 
-// Serve static files (HTML, CSS, JS) from the 'public' directory
+// Serve static files from 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- API Routes ---
-// All API logic is handled by the 'api.js' router
+// --- API ROUTES ---
+// Main API router
 app.use('/api', apiRoutes);
 
-// --- Page Serving ---
-// Serve the main pages.
-// This allows users to refresh pages like /purchase or /login
-// without getting a "Cannot GET /purchase" error.
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// New endpoint to send public, non-secret keys to the frontend
+app.get('/api/config', (req, res) => {
+  res.json({
+    paypalClientId: process.env.PAYPAL_CLIENT_ID
+  });
 });
 
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+// --- HTML FALLBACK (Serve index.html for any route not matched) ---
+// This handles client-side routing for SPA-like behavior
+app.get('*', (req, res, next) => {
+  const ext = path.extname(req.path);
+  // If it's not an API call and not a file, send the appropriate HTML
+  if (!ext && !req.path.startsWith('/api')) {
+    if (req.path.startsWith('/login')) {
+      res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    } else if (req.path.startsWith('/signup')) {
+      res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+    } else if (req.path.startsWith('/dashboard')) {
+      res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    } else if (req.path.startsWith('/purchase')) {
+      res.sendFile(path.join(__dirname, 'public', 'purchase.html'));
+    } else {
+      res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+  } else if (ext) {
+    // Handle 404 for files that don't exist
+    res.status(404).send('File not found');
+  } else {
+    // Let API 404s be handled by the router
+    next();
+  }
 });
 
-app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
-app.get('/purchase', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'purchase.html'));
-});
-
-// --- Start Server ---
+// --- SERVER START ---
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
