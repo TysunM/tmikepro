@@ -1,27 +1,45 @@
--- Database migration for AI Chatbot feature
--- Run this SQL to add chatbot support to your database
+-- This script updates the database to support the integrated Gemini chatbot
+-- It should be run *after* the main db.sql script.
 
--- Create chatbot_conversations table
-CREATE TABLE IF NOT EXISTS chatbot_conversations (
-  id SERIAL PRIMARY KEY,
-  conversation_id VARCHAR(255) UNIQUE NOT NULL,
-  user_name VARCHAR(255) DEFAULT 'Guest',
-  user_email VARCHAR(255),
-  messages JSONB NOT NULL DEFAULT '[]',
-  email_sent BOOLEAN DEFAULT FALSE,
-  email_sent_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 1. Add chatbot_tier to users table if it doesn't exist
+DO $$
+BEGIN
+    -- First, check if the ENUM type exists. If not, create it.
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'chatbot_tier') THEN
+        CREATE TYPE chatbot_tier AS ENUM ('free', 'premium', 'enterprise');
+    END IF;
+
+    -- Now, check if the column exists in the users table. If not, add it.
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'chatbot_tier'
+    ) THEN
+        ALTER TABLE users
+        ADD COLUMN chatbot_tier chatbot_tier DEFAULT 'free';
+    END IF;
+END $$;
+
+-- 2. Create chat_sessions table
+-- This table stores a record of each conversation
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    session_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    session_title VARCHAR(255) DEFAULT 'New Chat'
 );
 
--- Create index for faster lookups
-CREATE INDEX idx_conversation_id ON chatbot_conversations(conversation_id);
-CREATE INDEX idx_created_at ON chatbot_conversations(created_at);
-CREATE INDEX idx_email_sent ON chatbot_conversations(email_sent);
+-- 3. Create chat_messages table
+-- This table stores every message, linking it to a session
+CREATE TABLE IF NOT EXISTS chat_messages (
+    message_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES chat_sessions(session_id) ON DELETE CASCADE,
+    -- 'role' stores who sent the message: 'user' or 'model'
+    role VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
--- Add comments for documentation
-COMMENT ON TABLE chatbot_conversations IS 'Stores AI chatbot conversation history';
-COMMENT ON COLUMN chatbot_conversations.conversation_id IS 'Unique identifier for each conversation session';
-COMMENT ON COLUMN chatbot_conversations.messages IS 'JSON array of conversation messages with role, content, and timestamp';
-COMMENT ON COLUMN chatbot_conversations.email_sent IS 'Whether the conversation has been emailed to Tysun';
-
+-- 4. Add indexes for faster chat history retrieval
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
