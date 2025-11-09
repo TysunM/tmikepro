@@ -30,22 +30,22 @@
   });
 
   // Scroll-based Header
-  const header = document.getElementById('header');
+  const header = document.querySelector('.main-header');
   let lastScroll = 0;
 
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
+  if (header) {
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
 
-    if (currentScroll > 100) {
-      header.style.background = 'rgba(10, 10, 10, 0.98)';
-      header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
-    } else {
-      header.style.background = 'rgba(10, 10, 10, 0.95)';
-      header.style.boxShadow = 'none';
-    }
+      if (currentScroll > 100) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
 
-    lastScroll = currentScroll;
-  });
+      lastScroll = currentScroll;
+    }, { passive: true });
+  }
 
   // Intersection Observer for Fade-in Animations
   const observerOptions = {
